@@ -16,10 +16,6 @@ func NewFromPlan(r io.Reader) (*Plananizer, error) {
 	if err := json.NewDecoder(r).Decode(&plan); err != nil {
 		return nil, err
 	}
-
-	if err := plan.Validate(); err != nil {
-		return nil, err
-	}
 	return &Plananizer{plan}, nil
 }
 

@@ -7,12 +7,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/steeling/tfassist/internal/capture"
+	"github.com/steeling/tfassist/internal/tfcapture"
 )
 
 var (
 	stateFile = flag.String("state", "", "terraform json state file.")
-	out       = flag.String("output", "", "path to file to write capture non sensitive terraform output")
+	out       = flag.String("out", "", "path to file to write capture non sensitive terraform output")
 	overwrite = flag.Bool("overwrite", false, "whether to overwrite if the output file exists")
 )
 
@@ -22,23 +22,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c, err := capture.NewFromState(f)
+	c, err := tfcapture.NewFromState(f)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fileFlag := os.O_CREATE
+	fileFlag := os.O_CREATE | os.O_WRONLY
 	if !*overwrite {
-		perm |= os.O_EXCL
+		fileFlag |= os.O_EXCL
 	}
-	f, err := os.OpenFile(*out, fileFlag, 0600)
+	outF, err := os.OpenFile(*out, fileFlag, 0600)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err := c.CaptureOutputs(f)
+	n, err := c.CaptureOutputs(outF)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Infof("successfully wrote outputs to: %s", *out)
+	log.Printf("successfully wrote %d outputs to: %s", n, *out)
 }
